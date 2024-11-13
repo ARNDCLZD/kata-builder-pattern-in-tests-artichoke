@@ -1,5 +1,6 @@
 package info.dmerej;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -7,55 +8,57 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ShopTest {
 
-  private UserBuilder userBuilder = new UserBuilder();
+  private final UserBuilder userBuilder = new UserBuilder();
 
-    @Test
-    public void happy_path() {
-      resetBuilder();
-      userBuilder.buildAddress(false);
-      userBuilder.buildVerified(true);
-      final User user = userBuilder.getResult();
+  @BeforeEach
+  public void init(){
+    resetBuilder();
+  }
 
-      assertTrue(Shop.canOrder(user));
-      assertFalse(Shop.mustPayForeignFee(user));
-    }
+  @Test
+  public void happy_path() {
+    userBuilder.buildAddress(false);
+    userBuilder.buildVerified(true);
+    userBuilder.buildAge(false);
+    final User user = userBuilder.getResult();
 
-    @Test
-    public void minors_cannot_order_from_shop() {
-      resetBuilder();
-      userBuilder.buildAddress(false);
-      userBuilder.buildVerified(true);
-      userBuilder.buildAge(true);
-      final User user = userBuilder.getResult();
+    assertTrue(Shop.canOrder(user));
+    assertFalse(Shop.mustPayForeignFee(user));
+  }
 
-      assertFalse(Shop.canOrder(user));
-    }
+  @Test
+  public void minors_cannot_order_from_shop() {
+    userBuilder.buildAddress(false);
+    userBuilder.buildVerified(true);
+    userBuilder.buildAge(true);
+    final User user = userBuilder.getResult();
 
-    @Test
-    public void must_be_verified_to_order_from_shop() {
-      resetBuilder();
-      userBuilder.buildAddress(false);
-      userBuilder.buildVerified(false);
-      userBuilder.buildAge(false);
-      final User user = userBuilder.getResult();
+    assertFalse(Shop.canOrder(user));
+  }
 
-      assertFalse(Shop.canOrder(user));
-    }
+  @Test
+  public void must_be_verified_to_order_from_shop() {
+    userBuilder.buildAddress(false);
+    userBuilder.buildVerified(false);
+    userBuilder.buildAge(false);
+    final User user = userBuilder.getResult();
 
-    @Test
-    public void foreigners_must_pay_foreign_fee() {
-      resetBuilder();
-      userBuilder.buildAddress(true);
-      userBuilder.buildVerified(false);
-      userBuilder.buildAge(false);
-      final User user = userBuilder.getResult();
+    assertFalse(Shop.canOrder(user));
+  }
 
-      assertTrue(Shop.mustPayForeignFee(user));
-    }
+  @Test
+  public void foreigners_must_pay_foreign_fee() {
+    userBuilder.buildAddress(true);
+    userBuilder.buildVerified(false);
+    userBuilder.buildAge(false);
+    final User user = userBuilder.getResult();
 
-    private void resetBuilder(){
-      userBuilder.reset();
-      userBuilder.buildName();
-      userBuilder.buildEmail();
-    }
+    assertTrue(Shop.mustPayForeignFee(user));
+  }
+
+  private void resetBuilder(){
+    userBuilder.reset();
+    userBuilder.buildName();
+    userBuilder.buildEmail();
+  }
 }
